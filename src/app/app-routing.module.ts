@@ -1,9 +1,17 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
+import {MessageComponent} from './pages/message/message.component';
+import {NavigationComponent} from './pages/navigation/navigation.component';
 
 const routes: Routes = [
-  { path: '', pathMatch: 'full', redirectTo: '/welcome' },
-  { path: 'welcome', loadChildren: () => import('./pages/welcome/welcome.module').then(m => m.WelcomeModule) },
+  {
+    path: 'message',
+    component: MessageComponent,
+  },
+  {
+    path: 'navigation',
+    component: NavigationComponent,
+  }
 ];
 
 @NgModule({
