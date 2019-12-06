@@ -3,8 +3,11 @@
 <head>
   <script src="assets/three.min.js"></script>
   <script src="assets/three.js"></script>
-<!--  <script src="assets/DDSLoader.js"></script>-->
-<!--  <script src="assets/MTLLoader.js"></script>-->
+
+<!--  <script  type="text/javascript" src="assets/controls/OrbitControls.js"></script>-->
+<!--  <script  type="text/javascript" src="assets/controls/TrackballControls.js"></script>-->
+  <!--  <script src="assets/DDSLoader.js"></script>-->
+  <!--  <script src="assets/MTLLoader.js"></script>-->
   <script src="assets/OBJLoader.js"></script>
   <meta charset="utf-8">
   <title>Lss</title>
@@ -13,188 +16,262 @@
   <link rel="icon" type="image/x-icon" href="favicon.ico">
 
 </head>
+<style>
 
+
+  #label {
+    position: absolute;
+    padding: 10px;
+    left: -100px;
+    background: rgba(255, 255, 255, 0.6);
+    line-height: 1;
+    border-radius: 5px;
+
+
+  }
+</style>
 <body>
-  <app-root></app-root>
+<app-root></app-root>
 
 <script src="assets/angular-1.7.9/angular.js"></script>
 <script src="assets/jquery-1.11.0.js"></script>
 
+
 <!--  c'n'p'm-->
-  <script>
-    var container;
-
-    var camera, scene, renderer;
-
-    var mouseX = 0, mouseY = 0;
-
-    var windowHalfX = window.innerWidth / 2;
-    var windowHalfY = window.innerHeight / 2;
+<div id="label"></div>
+<script>
+  var camera, scene, renderer;
+  var controls;
 
 
-    init();
-    animate();
+  var mouseX = 0, mouseY = 0;
+
+  var windowHalfX = window.innerWidth / 2;
+  var windowHalfY = window.innerHeight / 2;
 
 
-    function init() {
+  init();
+  animate();
 
-      container = document.createElement( 'div' );
-      document.body.appendChild( container );
 
-      camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 2000 );
-      camera.position.z = 10;
+  function init() {
+    container = document.createElement( 'div' );
+    document.body.appendChild( container );
+    camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 2000 );
+    camera.position.z = 10;
+    scene = new THREE.Scene();
+    // controls = new THREE.OrbitControls(camera);
 
-      // scene
+    var ambient = new THREE.AmbientLight( 0x101030 );
+    scene.add( ambient );
 
-      scene = new THREE.Scene();
+    var directionalLight = new THREE.DirectionalLight( 0xffeedd );
+    directionalLight.position.set( 0, 0, 1 );
+    scene.add( directionalLight );
 
-      var ambient = new THREE.AmbientLight( 0x101030 );
-      scene.add( ambient );
+    // texture
 
-      var directionalLight = new THREE.DirectionalLight( 0xffeedd );
-      directionalLight.position.set( 0, 0, 1 );
-      scene.add( directionalLight );
+    var manager = new THREE.LoadingManager();
+    manager.onProgress = function ( item, loaded, total ) {
 
-      // texture
+      console.log( item, loaded, total );
 
-      var manager = new THREE.LoadingManager();
-      manager.onProgress = function ( item, loaded, total ) {
+    };
 
-        console.log( item, loaded, total );
+    var texture = new THREE.Texture();
 
-      };
+    var onProgress = function ( xhr ) {
+      if ( xhr.lengthComputable ) {
+        var percentComplete = xhr.loaded / xhr.total * 100;
+        console.log( Math.round(percentComplete, 2) + '% downloaded' );
+      }
+    };
 
-      var texture = new THREE.Texture();
+    var onError = function ( xhr ) {
+    };
 
-      var onProgress = function ( xhr ) {
-        if ( xhr.lengthComputable ) {
-          var percentComplete = xhr.loaded / xhr.total * 100;
-          console.log( Math.round(percentComplete, 2) + '% downloaded' );
+
+    var loader = new THREE.ImageLoader( manager );
+    loader.load( 'assets/waternormals.jpg', function ( image ) {
+
+      texture.image = image;
+      texture.needsUpdate = true;
+
+    } );
+
+    // model
+
+    var loader = new THREE.OBJLoader( manager );
+    loader.load( 'assets/tree.obj', function ( object ) {
+
+      object.traverse( function ( child ) {
+
+        if ( child instanceof THREE.Mesh ) {
+
+          child.material.map = texture;
+
         }
-      };
-
-      var onError = function ( xhr ) {
-      };
-
-
-      var loader = new THREE.ImageLoader( manager );
-      loader.load( 'assets/waternormals.jpg', function ( image ) {
-
-        texture.image = image;
-        texture.needsUpdate = true;
 
       } );
+      object.scale.x =  object.scale.y =  object.scale.z = 20;
+      object.updateMatrix();
+      object.position.y = -3;
+      scene.add( object );
 
-      // model
-
-      var loader = new THREE.OBJLoader( manager );
-      loader.load( 'assets/tree.obj', function ( object ) {
-
-        object.traverse( function ( child ) {
-
-          if ( child instanceof THREE.Mesh ) {
-
-            child.material.map = texture;
-
-          }
-
-        } );
-        object.scale.x =  object.scale.y =  object.scale.z = 20;
-        object.updateMatrix();
-        object.position.y = -3;
-        scene.add( object );
-
-      }, onProgress, onError );
-
-      //
-
-      renderer = new THREE.WebGLRenderer();
-      renderer.setPixelRatio( window.devicePixelRatio );
-      renderer.setSize( window.innerWidth, window.innerHeight );
-      container.appendChild( renderer.domElement );
-
-      document.addEventListener( 'mousemove', onDocumentMouseMove, false );
-
-      //
-
-      window.addEventListener( 'resize', onWindowResize, false );
-
-    }
-
-    function onWindowResize() {
-
-      windowHalfX = window.innerWidth / 2;
-      windowHalfY = window.innerHeight / 2;
-
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-
-      renderer.setSize( window.innerWidth, window.innerHeight );
-
-    }
-
-    function onDocumentMouseMove( event ) {
-
-      mouseX = ( event.clientX - windowHalfX ) / 2;
-      mouseY = ( event.clientY - windowHalfY ) / 2;
-
-    }
+    }, onProgress, onError );
 
     //
 
-    function animate() {
+    renderer = new THREE.WebGLRenderer();
+    renderer.setPixelRatio( window.devicePixelRatio );
+    renderer.setSize( window.innerWidth, window.innerHeight );
+    container.appendChild( renderer.domElement );
 
-      requestAnimationFrame( animate );
-      render();
+    document.addEventListener( 'mousemove', onDocumentMouseMove, false );
 
-    }
+    //
+    // var controls = new OrbitControls( this.camera, this.renderer.domElement );
+    // controls.target.set( 0, 25, 0 );
+    // controls.update();
+    window.addEventListener( 'resize', onWindowResize, false );
+    // document.addEventListener( 'mousemove', addTouchListener, false );
 
-    function render() {
+  }
+  addTouchListener();
+  function addTouchListener() {
 
-      camera.position.x += ( mouseX - camera.position.x ) * .5;
-      camera.position.y += ( - mouseY - camera.position.y ) * .5;
+  }
+  function onWindowResize() {
 
-      camera.lookAt( scene.position );
+    windowHalfX = window.innerWidth / 2;
+    windowHalfY = window.innerHeight / 2;
 
-      renderer.render( scene, camera );
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
 
-    }
-    //声明raycaster和mouse变量
-    var raycaster = new THREE.Raycaster();
-    var mouse = new THREE.Vector2();
+    renderer.setSize( window.innerWidth, window.innerHeight );
 
-    function onMouseClick( event ) {
+  }
 
-      //通过鼠标点击的位置计算出raycaster所需要的点的位置，以屏幕中心为原点，值的范围为-1到1.
+  function onDocumentMouseMove( event ) {
 
-      mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
-      mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+    mouseX = ( event.clientX - windowHalfX ) / 2;
+    mouseY = ( event.clientY - windowHalfY ) / 2;
 
-      // 通过鼠标点的位置和当前相机的矩阵计算出raycaster
-      raycaster.setFromCamera( mouse, camera );
-
-      console.log( scene.children);
-
-      // 获取raycaster直线和所有模型相交的数组集合
-      var intersects = raycaster.intersectObjects( scene.children[2].children );
-
-      console.log(intersects);
-
-      //将所有的相交的模型的颜色设置为红色，如果只需要将第一个触发事件，那就数组的第一个模型改变颜色即可
-      for ( var i = 0; i < intersects.length; i++ ) {
-
-        intersects[ i ].object.material.color.set( 0xff0000 );
-
-
+  }
+  function windowAddMouseWheel() {
+    var scrollFunc = function (e) {
+      var positionZ=0;
+      e = e || window.event;
+      if (e.wheelDelta) {  //判断浏览器IE，谷歌滑轮事件
+        camera.position.z=camera.position.z+e.wheelDelta*0.1;
+        console.log(e.wheelDelta);
+      } else if (e.detail) {  //Firefox滑轮事件
+        camera.position.z=camera.position.z+e.detail*0.1;
+        console.log(e.detail);
       }
-
+      if(positionZ<=1000&&positionZ>=0.1){
+        camera.position.z=positionZ;
+      }
+    };
+    //给页面绑定滑轮滚动事件
+    if (document.addEventListener) {
+      document.addEventListener('DOMMouseScroll', scrollFunc, false);
     }
+//滚动滑轮触发scrollFunc方法
+    window.onmousewheel = document.onmousewheel = scrollFunc;
+  }
+  windowAddMouseWheel();
 
-    window.addEventListener( 'click', onMouseClick, false);
-  </script>
-  <div id="container">
 
 
-  </div>
+  //
+
+  function animate() {
+
+    requestAnimationFrame( animate );
+    render();
+
+  }
+
+  function render() {
+
+    camera.position.x += ( mouseX - camera.position.x ) * .5;
+    camera.position.y += ( - mouseY - camera.position.y ) * .5;
+
+    camera.lookAt( scene.position );
+
+    renderer.render( scene, camera );
+
+  }
+  //声明raycaster和mouse变量
+  var raycaster = new THREE.Raycaster();
+  var mouse = new THREE.Vector2();
+
+  function onMouseClick( event ) {
+
+    //通过鼠标点击的位置计算出raycaster所需要的点的位置，以屏幕中心为原点，值的范围为-1到1.
+
+    mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+    mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+
+    // 通过鼠标点的位置和当前相机的矩阵计算出raycaster
+    raycaster.setFromCamera( mouse, camera );
+
+    console.log( scene.children);
+
+    // 获取raycaster直线和所有模型相交的数组集合
+    var intersects = raycaster.intersectObjects( scene.children[2].children );
+
+    console.log(intersects);
+    $("#label").text("请选择模型");
+    $("#label").css({
+      left: -100,
+      top: 0
+    });
+    //将所有的相交的模型的颜色设置为红色，如果只需要将第一个触发事件，那就数组的第一个模型改变颜色即可
+    for ( var i = 0; i < intersects.length; i++ ) {
+
+      intersects[ i ].object.material.color.set( 0xff0000 );
+
+      var halfWidth = window.innerWidth / 2;
+      var halfHeight = window.innerHeight / 2;
+      var vector = this.scene.position.clone().project(camera);
+
+      // 修改 div 的位置
+      $("#label").css({
+        left: vector.x * halfWidth + halfWidth,
+        top: -vector.y * halfHeight + halfHeight - scene.position.y
+      });
+
+
+      $("#label").text("name:" +  intersects[ 0 ].object.uuid);
+    }
+    // function renderDiv(object) {
+    //   console.log("ddd");
+    //   // 获取窗口的一半高度和宽度
+    //   var halfWidth = window.innerWidth / 2;
+    //   var halfHeight = window.innerHeight / 2;
+    //
+    //   // 逆转相机求出二维坐标
+    //   var vector = object.position.clone().project(camera);
+    //
+    //   // 修改 div 的位置
+    //   $("#label").css({
+    //     left: vector.x * halfWidth + halfWidth,
+    //     top: -vector.y * halfHeight + halfHeight - object.position.y
+    //   });
+    //   // 显示模型信息
+    //   $("#label").text("name:" + object.name);
+    // }
+
+  }
+  // 更新div的位置
+
+  window.addEventListener( 'click', onMouseClick, false);
+</script>
+
+
+
 </body>
 </html>
