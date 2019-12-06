@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+  <meta charset="UTF-8">
+  <title></title>
+  <style>
+    ul>li{
+      list-style: none;
+      display: inline-block;
+    }
+  </style>
+  <script src="angular/angular.js"></script>
+</head>
+<body>
+<div ng-app="myTodoApp" ng-controller="myTodoCtrl">
+
+  <h2>留言板：</h2>
+
+  <p><textarea ng-model="message" cols="40" rows="10"></textarea></p>
+
+  <p>
+    <button ng-click="submit()">提交</button>
+    <button ng-click="reset()">重置</button>
+  </p>
+
+  <p>剩下的字符数：<span ng-bind="left()"></span></p>
+  <ul ng-repeat="news in newsArry">
+    <li>{{news.values}}</li>        <span>{{news.time}}</span><button ng-click="delete(news)">删除留言</button>
+  </ul>
+
+</div>
+
+<script src="../../../assets/jquery-1.11.0.js"></script>
+<script>
+  var app=angular.module("myTodoApp",[]);
+  app.controller("myTodoCtrl",function($scope){
+    $scope.newsArry=[{
+      values:"我要订一间房",
+      time:"2016-10-01"
+    }];
+    $scope.message="";
+    $scope.left=function(){
+      return 150-$scope.message.length;
+    };
+    $scope.reset=function(){
+      $scope.message="";
+    };
+    $scope.submit=function(){
+      var news={};
+      var times=new Date();
+      news.values=$scope.message;
+      news.time=times.toLocaleString();
+      $scope.newsArry.push(news);
+      $scope.message="";
+    };
+    $scope.delete=function(news){
+      var index=$scope.newsArry.indexOf(news);
+      $scope.newsArry.splice(index,1);
+    };
+  });
+</script>
+
+</body>
+</html>
