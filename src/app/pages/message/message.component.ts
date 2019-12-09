@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { distanceInWords } from 'date-fns';
+import { StorageService } from '../storage.service';
+
 @Component({
   selector: 'app-message',
   templateUrl: './message.component.html',
@@ -9,7 +11,7 @@ export class MessageComponent implements OnInit {
   data: any[] = [];
   submitting = false;
   user = {
-    author: 'Han Solo',
+    author: ' item.content',
     avatar: 'https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png'
   };
   inputValue = '';
@@ -37,7 +39,12 @@ export class MessageComponent implements OnInit {
     }, 800);
   }
 
+  constructor(public storage: StorageService) {
+    const on = this.storage.get();
+    console.log(on);
+  }
   ngOnInit() {
   }
+
 }
 

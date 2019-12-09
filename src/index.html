@@ -4,8 +4,8 @@
   <script src="assets/three.min.js"></script>
   <script src="assets/three.js"></script>
 
-<!--  <script  type="text/javascript" src="assets/controls/OrbitControls.js"></script>-->
-<!--  <script  type="text/javascript" src="assets/controls/TrackballControls.js"></script>-->
+  <script  type="text/javascript" src="assets/OrbitControls.js"></script>
+  <!--  <script  type="text/javascript" src="assets/controls/TrackballControls.js"></script>-->
   <!--  <script src="assets/DDSLoader.js"></script>-->
   <!--  <script src="assets/MTLLoader.js"></script>-->
   <script src="assets/OBJLoader.js"></script>
@@ -18,9 +18,8 @@
 </head>
 <style>
 
-
   #label {
-    position: absolute;
+    position:absolute;
     padding: 10px;
     left: -100px;
     background: rgba(255, 255, 255, 0.6);
@@ -32,7 +31,6 @@
 </style>
 <body>
 <app-root></app-root>
-
 <script src="assets/angular-1.7.9/angular.js"></script>
 <script src="assets/jquery-1.11.0.js"></script>
 
@@ -129,6 +127,10 @@
 
     document.addEventListener( 'mousemove', onDocumentMouseMove, false );
 
+
+    // var controls = new OrbitControls( camera, renderer.domElement );
+    // controls.target.set( 0, 25, 0 );
+    // controls.update();
     //
     // var controls = new OrbitControls( this.camera, this.renderer.domElement );
     // controls.target.set( 0, 25, 0 );

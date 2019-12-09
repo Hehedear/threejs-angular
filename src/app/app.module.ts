@@ -11,6 +11,8 @@ import { registerLocaleData } from '@angular/common';
 import zh from '@angular/common/locales/zh';
 import {NavigationModule} from './pages/navigation/navigation.module';
 import {MessageModule} from './pages/message/message.module';
+import {StorageService} from './pages/storage.service';
+
 registerLocaleData(zh);
 
 @NgModule({
@@ -28,7 +30,7 @@ registerLocaleData(zh);
     NavigationModule,
     MessageModule
   ],
-  providers: [{ provide: NZ_I18N, useValue: zh_CN }],
+  providers: [{ provide: NZ_I18N, useValue: zh_CN }, StorageService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
